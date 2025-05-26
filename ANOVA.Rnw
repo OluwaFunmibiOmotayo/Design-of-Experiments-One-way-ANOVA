@@ -1,0 +1,955 @@
+\documentclass{beamer}
+\usetheme{Madrid}
+\usepackage{minted}
+\usepackage{booktabs}  % Useful for tables
+\usepackage{ragged2e} % For text justification
+\usepackage{graphicx} % For including images
+
+
+
+% Define a custom color using the red from the logo
+\definecolor{NebraskaRed}{RGB}{204,0,0} % Adjust if necessary
+
+% Apply the color to the theme
+\setbeamercolor{structure}{fg=NebraskaRed} 
+\setbeamercolor{frametitle}{fg=white, bg=NebraskaRed}
+\setbeamercolor{title}{fg=white, bg=NebraskaRed}
+\setbeamercolor{subtitle}{fg=white}
+\setbeamercolor{author}{fg=NebraskaRed}
+\setbeamercolor{date}{fg=NebraskaRed}
+\setbeamercolor{section in toc}{fg=NebraskaRed}
+
+\title{Design of Experiments, One-way ANOVA }
+\subtitle{Examples in R}
+\author{Statistical Cross-disciplinary Collaboration and Consulting Lab (SC3L)}
+\institute{Oluwafunmibi Omotayo Fasanya}
+\date{March 12, 2025}
+
+\begin{document}
+
+\frame{\titlepage}
+
+
+
+
+
+\begin{frame}{About SC3L}
+
+\begin{columns}[T]
+\column{0.42\textwidth}
+\includegraphics[width=\textwidth]{SC3l.JPG}
+
+\column{0.55\textwidth}
+\justifying
+{\small\textbf{What We Do}\\
+The Statistical Cross-disciplinary Collaboration and Consulting Lab (SC3L) is a free service available to students, faculty, and staff at the University of Nebraska who are in need of assistance with:
+\begin{itemize}
+\item MS thesis or doctoral dissertation
+\item Faculty research
+\item Statistical analysis support
+\end{itemize}
+}
+\vspace{0.001cm}
+{\small\textbf{Need Statistical Help?}
+\begin{enumerate}
+\item Fill out the Google form on our website\\
+   {\tiny(required for record-keeping and consultant matching)}
+\item Schedule a meeting with an appropriate consultant
+\end{enumerate}
+\centering
+\text https://statistics.unl.edu/sc3lhelp-desk/
+}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Outline}
+  \begin{itemize}
+    \item Fundamentals of Experiment Design
+    \begin{itemize}
+        \item What is an Experiment?
+        \item What is experimental design?
+        \item Principles of Experiment Design
+        \item Structure of Experiment Design
+    \end{itemize}
+    \vspace{0.3cm}
+    \item One-Way ANOVA (Completely Randomized design)
+    \begin{itemize}
+        \item Concept and Assumptions 
+    \end{itemize}
+    \vspace{0.3cm}
+    \item One-Way ANOVA (Completely Randomized design) 
+    \begin{itemize}
+        \item Hands-on Example in R 
+    \end{itemize}
+  \end{itemize}
+  
+\end{frame}
+
+\section{Introduction}
+
+
+\begin{frame}{Fundamentals of Experimental Design}
+\textbf{What is an Experiment?}  
+An experiment is the process of applying a treatment to experimental material or units and recording observations to answer a specific research question.
+
+\vspace{0.4cm}
+
+\textbf{Treatment}  
+An experimental condition that is applied to the experimental material or unit.
+
+\vspace{0.4cm}
+
+\textbf{Experimental Unit}  
+A subdivision of the experimental material such that different units can receive different treatments.
+\end{frame}
+
+\begin{frame}{Experimental Unit}
+    \begin{columns}
+        \begin{column}{0.55\textwidth}
+            \footnotesize
+            \textbf{Scenario 1: Individual-Level Treatment}  
+            \begin{itemize}
+                \item A researcher is interested in evaluating the effects of two antibiotics on weight gain in mice.
+                \item Treatment applied to individual mice (random injections).
+                \item Experimental Unit: Individual mice.
+                \item Total Experimental Units: 8.
+            \end{itemize}
+            \begin{center}
+                \includegraphics[width=0.5\textwidth]{EU.JPG}
+            \end{center}
+        \end{column}
+
+        \begin{column}{0.45\textwidth}
+            \footnotesize
+            \textbf{Scenario 2: Group-Level Treatment}  
+            \begin{itemize}
+              \item The researcher now investigates the effects of two diets on weight gain.
+              \item Treatment applied at the cage level (4 cages, 2 mice each).
+              \item Experimental Unit: Cage.
+              \item Total Experimental Units: 4.
+            \end{itemize}
+            \begin{center}
+                \includegraphics[width=0.60\textwidth]{EU2.JPG}
+            \end{center}
+        \end{column}
+    \end{columns}
+
+    \vspace{0.3cm}
+    \centering
+    \textbf{Key Takeaway:} The experimental unit is the smallest unit to which a treatment is independently applied.  
+\end{frame}
+
+
+
+\section{Experimental Design}
+
+\begin{frame}{What is Experimental Design?}
+\begin{itemize}
+    \item The method and procedure of planning experiments to obtain information about a specific question in an unbiased, clear, and precise manner.
+    \item A research method that allows us to determine the effect of a single or multiple factors (treatments) on an outcome.
+    \item The main goal of designing an experiment is to reduce error for a particular investigation.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Principles of Experimental Design}
+\textbf{1. Randomization}  
+\begin{itemize}
+    \item The process of randomly assigning treatments to experimental units.  
+    \item Ensures every treatment has an equal chance of being assigned to different experimental units.  
+    \item Helps eliminate bias from researchers' judgment.  
+    \item The most reliable method for creating homogeneous treatment groups without potential biases.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Example: Randomization}
+\textbf{Example: Randomizing Treatment Assignment}  
+\begin{itemize}
+    \item Suppose we have 20 experimental units and want to test two fertilizers (A and B).  
+    \item Instead of assigning fertilizers based on pre-existing conditions, we use randomization:  
+    \begin{itemize}
+        \item Randomly assign 10 units to Fertilizer A.  
+        \item Randomly assign 10 units to Fertilizer B.  
+    \end{itemize}
+    \item This ensures each unit has an equal chance of receiving either treatment, reducing selection bias.  
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Principles of Experimental Design}
+\textbf{2. Replication (Ensuring Reliability)}  
+\begin{itemize}
+    \item Experiments should be repeated more than once to reduce variability in results.
+    \item Each treatment is applied to multiple experimental units rather than just one.
+    \item Replication helps reduce variability, increases significance, and improves confidence in conclusions.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Example: Replication}
+\textbf{Example: Examining Maize Varieties}  
+\begin{itemize}
+    \item Suppose we want to examine the effect of four maize varieties. We divide a field into four parts and grow one variety in each.
+    \item Applying replication: Instead of four large sections, we divide the field into 12 smaller plots and randomly assign:
+    \begin{itemize}
+        \item Three plots to Variety A
+        \item Three plots to Variety B
+        \item Three plots to Variety C
+        \item Three plots to Variety D
+    \end{itemize}
+    \item This reduces variability and improves the reliability of results.
+    \item Note that we randomly assign each variety to multiple plots to reduce bias caused by soil fertility, moisture, or other environmental factors. 
+    \item Each variety is grown in several plots (not just one), ensuring that we obtain multiple independent observations for each variety.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Pseudoreplication}
+\begin{itemize}
+        \item Pseudoreplication occurs in an experiments where either treatments are not replicated or replicates are not statistically independent.
+        \item True replication allows the estimation of variability between treatments.
+    \end{itemize}
+ 
+\vspace{0.2cm}
+    \begin{columns}
+        % Left column: Two images stacked
+        \begin{column}{0.45\textwidth}
+            \centering
+            \includegraphics[width=0.8\textwidth]{PS.jpg}
+            \vspace{0.6cm}
+            \includegraphics[width=0.8\textwidth]{PS2.jpg}
+        \end{column}
+        
+        % Right column: Text content
+        \begin{column}{0.55\textwidth}
+            \footnotesize
+            \begin{itemize}
+                \item Pseudoreplication can lead to misleading conclusions due to confounding factors.
+                \item If an external factor affects only one group, it can create false differences.
+                \item The observed difference may not be due to the treatment itself but rather to an uncontrolled variable.
+                \item Without proper replication, it’s easy to mistake random chance for a real effect.
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Principles of Experimental Design}
+\textbf{3. Blocking (Reducing Variability)}  
+\begin{itemize}
+    \item Blocking involves grouping similar subjects together before randomly assigning them to treatment groups.
+    \item This helps reduce variability within treatment groups by ensuring they are balanced on key characteristics (blocking by age, then randomly assigning within each age group).
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Example: Blocking}
+\textbf{Example: Accounting for Soil Differences}  
+\begin{itemize}
+    \item Suppose we are testing different fertilizers on crop yield, but the field has variations in soil quality.  
+    \item To account for this, we divide the field into blocks based on soil type (e.g., sandy, loamy, clay).  
+    \item Within each block, we randomly assign fertilizer treatments, ensuring soil differences do not confound results.  
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Experimental Design}
+    Experimental design can be broken into:
+    \begin{itemize}
+        \item \textbf{Treatment Structure:} How treatments are arranged.
+        \begin{itemize}
+            \item \textbf{Single Factor:} The treatment consists of a single variable factor.
+            \item {\color{lightgray} \textbf{Multifactor:} Multiple factors are considered to analyze their combined effects.
+            \begin{itemize}
+                \item {\color{lightgray} Full Factorial}
+                \item {\color{lightgray} Fractional Factorial}
+                \item {\color{lightgray} Factorial with Control}
+                \item {\color{lightgray} Nested Structure}
+            \end{itemize}}
+        \end{itemize}
+        \item \textbf{Design Structure:} How experimental units are grouped into homogeneous groups or blocks.
+        \begin{itemize}
+            \item Completely Randomized Design: 
+            \begin{itemize}
+            \item Each experimental units is assigned to a treatment at random without accounting for any individual characteristics.
+            \end{itemize}
+            \item {\color{lightgray} Randomized Block Design}
+            \item {\color{lightgray} Row-Column Design}
+            \item {\color{lightgray} Split-Plot Design}
+            \item {\color{lightgray} Criss-Cross Design}
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{}
+    \begin{center}
+        \huge\textbf{One-Way ANOVA}\\
+        \vspace{0.3cm}
+        \large(Completely Randomized Design)\\
+        \vspace{0.5cm}
+        \normalsize\textcolor{structure}{\textit{Concepts and Assumptions}}
+    \end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{What is One-Way ANOVA?}
+\begin{itemize}
+\item A statistical technique to test for statistically significant differences between means of three or more independent groups
+\item Analyzes the variance among values
+\item "One-Way" refers to having only a single predictor/explanatory variable 'X' and one response variable 'Y'
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Requirements for One-Way ANOVA}
+
+\begin{itemize}
+\item \textbf{Dependent Variable}: Continuous
+\item \textbf{Independent Variable}: Categorical, consisting of three or more groups
+\item \textbf{Independence of Observations}: Samples or groups being compared must be independent, this implies
+\begin{itemize}
+\item Participants in one group should not be part of another group
+\item Individuals in one group must not influence those in another
+\item If subjects were matched, or samples represent before/during/after measurements, use a different ANOVA type
+\end{itemize}
+\item \textbf{Random Sampling}: Samples randomly selected from or representative of larger populations
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Requirements for One-Way ANOVA}
+\begin{itemize}
+\item \textbf{Normality Assumption}: Dependent variable should follow approximately normal distribution. 
+\begin{itemize}
+\item With larger sample sizes, minor violations of normality may still yield reliable results
+\end{itemize}
+\item \textbf{Homogeneity of Variances:}
+\begin{itemize}
+\item Variance of dependent variable should be roughly equal across all groups
+\end{itemize}
+\item \textbf{No Extreme Outliers:}
+\begin{itemize}
+\item The presence of significant outliers can distort results and should be examined before conducting the analysis.
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Hypotheses for One-Way ANOVA}
+\textbf{Null Hypothesis (H$_0$):} No difference between the groups  
+\[
+H_0: \mu_1 = \mu_2 = \mu_3 = \dots = \mu_t
+\]
+\textbf{Alternative Hypothesis (H$_1$):} At least one group is different  
+\[
+H_1: \text{at least one } \mu_i \text{ differs}
+\]
+where $\mu_i$ is the population mean of the $i$-th group ($i = 1, 2, …, t$).
+\end{frame}
+
+\begin{frame}
+\frametitle{One-Way ANOVA: Variation Components}
+
+\textbf{Total Variation} in the data is divided into:  
+\begin{itemize}
+    \item \textbf{Between-Group Variation}: Differences in means across groups.
+    \item \textbf{Within-Group Variation}: Variability within each group due to individual differences.
+\end{itemize}
+
+\vspace{0.3cm}
+
+\textbf{The One-Way ANOVA Table:}
+
+\scriptsize % Reduce font size for the table
+\begin{table}[]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\setlength{\tabcolsep}{3pt} % Adjust column spacing
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+ & \textbf{SS} & \textbf{df} & \textbf{MS} & \textbf{F} & \textbf{p} \\ \hline
+\textbf{Between Groups} & SSH & \(t-1\) & \(MST = \frac{SSH}{t-1}\) & \( \frac{MSH}{MSE} \) & \( F_{df_1, df_e} \) \\ \hline
+\textbf{Within Groups} & SSE & \(n-t\) & \(MSE = \frac{SSR}{n-t}\) &  &  \\ \hline
+\textbf{Total} & SST & \(n-1\) &  &  &  \\ \hline
+\end{tabular}
+\end{table}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{F-Statistic in One-Way ANOVA}
+The test statistic for ANOVA is the F-statistic:
+\[
+F = \frac{\text{Between-Group Variation}}{\text{Within-Group Variation}}
+\]
+\begin{itemize}
+    \item A \textbf{larger F-value} suggests significant group differences.
+    \item A \textbf{smaller F-value} suggests differences are due to random variation.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Data Set-Up for One-Way ANOVA}
+To perform a one-way ANOVA, your dataset should include:
+\begin{itemize}
+    \item \textbf{At least two variables:}
+    \begin{itemize}
+        \item \textbf{Independent Variable:} A categorical factor with at least three distinct groups.
+        \item \textbf{Dependent Variable:} A continuous variable.
+    \end{itemize}
+    \item Each row in the dataset should correspond to a unique participant or experimental unit.
+    \item Observations must be \textbf{independent}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{}
+    \begin{center}
+        \huge\textbf{One-Way ANOVA}\\
+        \vspace{0.3cm}
+        \large(Completely Randomized Design)\\
+        \vspace{0.5cm}
+        \normalsize\textcolor{structure}{\textit{Hands-on Example in R}}
+    \end{center}
+\end{frame}
+
+
+
+% Slide: Dataset Introduction - Fertilizer Experiment
+\begin{frame}
+\frametitle{Experimental Design: Fertilizer Study}
+
+\textbf{Objective:} Evaluate the effect of three fertilizers on maize yield using a completely randomized design.
+
+\vspace{0.3cm}
+
+\textbf{Fertilizer Treatments:}
+\begin{itemize}
+    \item \textbf{Nitrogen-Based} (Red)
+    \item \textbf{Potassium-Enriched} (Blue)
+    \item \textbf{Organic Compost} (Yellow)
+\end{itemize}
+
+\textbf{Randomization and Replication:}
+\begin{itemize}
+    \item Each fertilizer is applied to \textbf{14 plots}.
+    \item \textbf{Total plots:} 42
+    \item Completely randomized design (CRD) layout.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Randomized Fertilizer Plot Layout}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.7\textwidth]{CRD.jpg} % Adjust size as needed
+    \caption{Completely Randomized Design(CRD) for Fertilizer Treatments}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Dataset: Fertilizer and Maize Yield}
+
+\textbf{Objective:} Evaluate the impact of three different fertilizer treatments on maize yield.
+
+\vspace{0.3cm} % Add some spacing before dataset summary
+
+\textbf{Yield Data (kg per plot):}
+\begin{table}[]
+    \centering
+    \renewcommand{\arraystretch}{1.1} % Adjust row spacing
+    \setlength{\tabcolsep}{3pt} % Reduce space between columns
+    \scriptsize % Reduce font size
+    \begin{tabular}{c|p{8cm}} % Wrap text in a fixed-width column
+        \hline
+        \textbf{Treatment} & \textbf{Yield Values} \\
+        \hline
+        TRT 1 & 30.1, 21.1, 29.3, 24.5, 29.1, 25.4, 31.8, 30.7, 26.6, 22.5, 26.0, 21.7, 34.8, 35.4 \\
+        TRT 2 & 28.2, 22.3, 20.6, 16.7, 22.8, 22.7, 28.1, 28.3, 24.7, 19.2, 23.6, 19.0, 34.3, 31.3 \\
+        TRT 3 & 24.4, 20.2, 23.7, 18.5, 27.7, 26.7, 30.6, 24.0, 26.0, 23.6, 15.5, 16.3, 23.4, 19.8 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\end{frame}
+
+% Slide: Hypothesis for Fertilizer Experiment
+\begin{frame}
+\frametitle{Hypothesis for Fertilizer and Maize Yield Study}
+\textbf{Null Hypothesis (H$_0$)}: There is no significant difference in maize yield among the three fertilizer treatments.  
+\[
+H_0: \mu_{\text{Fertilizer 1}} = \mu_{\text{Fertilizer 2}} = \mu_{\text{Fertilizer 3}}
+\]
+\textbf{Alternative Hypothesis (H$_1$)}: At least one fertilizer group shows a significant difference in yield  
+\[
+H_1: \text{At least one } \mu_i \text{ differs}
+\]
+\end{frame}
+
+% Step 1: Load Libraries
+\begin{frame}[fragile]
+    \frametitle{Step 1: Load Required Libraries}
+    \begin{minted}[fontsize=\small]{r}
+# Load required libraries
+library(tidyr)    # Data wrangling (e.g., pivot_longer)
+library(dplyr)    # Data manipulation and summarization
+library(ggplot2)  # Data visualization 
+library(car)      # Assumption tests
+    \end{minted}
+\end{frame}
+
+
+% Step 2: Load and Transform Data
+\begin{frame}[fragile]
+    \frametitle{Step 2: Load and Transform Data}
+    \begin{minted}[fontsize=\small]{r}
+# Load dataset
+dat_CRD <- data.frame(
+  Sample = 1:14,
+  TRT1 = c(30.1, 21.1, 29.3, 24.5, 29.1, 25.4, 31.8, 
+           30.7, 26.6, 22.5, 26.0, 21.7, 34.8, 35.4),
+  TRT2 = c(28.2, 22.3, 20.6, 16.7, 22.8, 22.7, 28.1,
+           28.3, 24.7, 19.2, 23.6, 19.0, 34.3, 31.3),
+  TRT3 = c(24.4, 20.2, 23.7, 18.5, 27.7, 26.7, 30.6,
+           24.0, 26.0, 23.6, 15.5, 16.3, 23.4, 19.8)
+)
+
+# Convert data to long format
+dat_CRD_long <- pivot_longer(dat_CRD, cols = -Sample, 
+                             names_to = "Treatment", 
+                             values_to = "Response")
+dat_CRD_long$Treatment <- as.factor(dat_CRD_long$Treatment)
+    \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Step 3: Data Visualization - Boxplot}
+    
+    \textbf{Boxplot of Treatment Effect on Response}
+    
+    \begin{minted}[fontsize=\tiny]{r}
+    # Boxplot
+    ggplot(dat_CRD_long, aes(x = Treatment,y = Response,fill = Treatment)) +
+      geom_boxplot() +
+      theme_minimal() +
+      labs(title = "Treatment Effect on Response",x = "Treatment", y = "Response")
+    \end{minted}
+    
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.5\linewidth]{Rplot01.JPEG}
+        \caption{Boxplot of Treatment Effect on Response}
+    \end{figure}
+
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Step 3: Data Visualization - Histogram}
+    
+    \textbf{Histogram of Maize Yield Distribution}
+    
+    \begin{minted}[fontsize=\tiny]{r}
+    # Histogram
+    ggplot(dat_CRD_long, aes(x = Response)) +
+      geom_histogram(aes(y = ..density..),bins = 15,fill = "skyblue",color = "black", alpha = 0.7) +
+      geom_density(color = "red", size = 0.5) +
+      theme_minimal() +
+      labs(title = "Distribution of Maize Yield",x = "Response", y = "Density")
+    \end{minted}
+    
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.5\linewidth]{Rplot02.JPEG}
+        \caption{Histogram of Maize Yield Distribution}
+    \end{figure}
+
+\end{frame}
+
+% Step 5: Running One-Way ANOVA
+\begin{frame}[fragile]
+    \frametitle{Step 5: Running One-Way ANOVA}
+    
+    \textbf{ANOVA Model}
+
+    \begin{minted}[fontsize=\small]{r}
+    # Perform ANOVA
+    anova_mod <- aov(Response ~ Treatment, data = dat_CRD_long)
+    summary(anova_mod)
+    \end{minted}
+
+    \vspace{0.2cm} % Adds some space for readability
+
+    \textbf{ANOVA Output:}
+
+    \begin{scriptsize} % Adjust font size for better fit
+    \begin{verbatim}
+                   Df Sum Sq Mean Sq F value Pr(>F)  
+    Treatment      2  176.0   88.00   4.051  0.0252 *
+    Residuals     39  847.2   21.72                  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+    \end{verbatim}
+    \end{scriptsize}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Step 5: Assumption Checks for ANOVA}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{Residual Analysis}
+\begin{minted}[fontsize=\tiny]{r}
+# Plot residuals
+plot(anova_mod)
+\end{minted}
+\vspace{0.3cm}
+\centering
+\includegraphics[width=0.9\linewidth]{Rplot03.jpeg} 
+\vspace{0.2cm}
+{\scriptsize \textit{Figure: Residual Diagnostic Plot}}
+        
+\column{0.5\textwidth}
+{\small \textbf{Shapiro-Wilk Normality Test}}
+\begin{minted}[fontsize=\tiny]{r}
+# Shapiro-Wilk test on residuals
+aov_residuals <- residuals(object = anova_mod)
+shapiro.test(x = aov_residuals)
+\end{minted}
+\begin{scriptsize}
+\begin{verbatim}
+Shapiro-Wilk normality test
+data:  aov_residuals
+W = 0.97533, p-value = 0.4895
+\end{verbatim}
+\end{scriptsize}
+
+\vspace{0.1cm}
+
+{\small \textbf{Levene's Test for Homogeneity of Variance}}
+\begin{minted}[fontsize=\tiny]{r}
+# Homogeneity of variance
+leveneTest(aov_residuals ~ dat_CRD_long$Treatment)  
+\end{minted}
+\begin{scriptsize}
+\begin{verbatim}
+Levene's Test for Homogeneity of Variance (center = median)
+       Df F value Pr(>F)
+group  2  0.2274 0.7976
+      39            
+\end{verbatim}
+\end{scriptsize}
+\end{columns}
+\end{frame}
+
+
+% Step 6: Post-hoc Analysis
+\begin{frame}[fragile]
+\frametitle{Step 6: Post-hoc Analysis}
+
+\textbf{Tukey's HSD Test}
+\begin{minted}[fontsize=\small]{r}
+    tukey_test <- TukeyHSD(anova_mod)
+    print(tukey_test)
+\end{minted}
+
+\vspace{0.2cm}
+
+\textbf{Post-hoc Result}
+\begin{scriptsize}
+\begin{verbatim}
+    Tukey multiple comparisons of means
+      95% family-wise confidence level
+    
+    Fit: aov(formula = Response ~ Treatment, data = dat_CRD_long)
+    
+    $Treatment
+                   diff       lwr        upr     p adj
+    TRT2-TRT1 -3.371429 -7.663250  0.9203924 0.1482812
+    TRT3-TRT1 -4.900000 -9.191821 -0.6081790 0.0220928
+    TRT3-TRT2 -1.528571 -5.820392  2.7632496 0.6635876        
+\end{verbatim}
+\end{scriptsize}
+  
+\end{frame}
+
+% Summary Slide
+\begin{frame}
+    \frametitle{Summary}
+    \begin{itemize}
+        \item One-Way ANOVA helps determine if treatment groups differ significantly.
+        \item Assumptions checked: normality and homogeneity of variance.
+        \item Tukey’s HSD used for post-hoc pairwise comparisons.
+    \end{itemize}
+\end{frame}
+
+% Slide: Introduction to the Study
+\begin{frame}
+\frametitle{Effect of Feed Supplements on Pig Growth Rate}
+Feed supplementation is a common practice in commercial pig farming to enhance growth rates.  
+This study assesses whether different feed supplements affect weight gain in weaned piglets.  
+
+\textbf{Experimental Groups:}
+\begin{itemize}
+    \item \textbf{Group A}: Standard feed (control)
+    \item \textbf{Group B}: Feed + Probiotic supplement
+    \item \textbf{Group C}: Feed + Enzyme supplement
+    \item \textbf{Group D}: Feed + Essential oil blend
+\end{itemize}
+
+Weight gain was measured over a 6-week period following weaning.
+\end{frame}
+
+\begin{frame}
+\frametitle{Weight Gain by Feed Group}
+
+\textbf{Objective:} Evaluate the impact of of Feed Supplements on Pig Growth Rate.
+
+\vspace{0.3cm} % Add some spacing before dataset summary
+
+\tiny 
+\centering
+\setlength{\tabcolsep}{2pt} % Minimize column padding
+\renewcommand{\arraystretch}{0.8} % Reduce row spacing
+
+\begin{tabular}{lcc}
+\toprule
+\textbf{Pig ID} & \textbf{Feed Group} & \textbf{Weight Gain (kg)} \\
+\midrule
+P01  & Standard      & 12.8  \\
+P02  & Standard      & 13.5  \\
+P03  & Standard      & 11.9  \\
+P04  & Standard      & 12.3  \\
+P05  & Standard      & 14.1  \\
+P06  & Standard      & 13.0  \\
+P07  & Probiotic     & 15.2  \\
+P08  & Probiotic     & 16.4  \\
+P09  & Probiotic     & 14.8  \\
+P10  & Probiotic     & 15.9  \\
+P11  & Probiotic     & 17.2  \\
+P12  & Probiotic     & 16.1  \\
+P13  & Enzyme        & 14.5  \\
+P14  & Enzyme        & 15.3  \\
+P15  & Enzyme        & 13.9  \\
+P16  & Enzyme        & 14.8  \\
+P17  & Enzyme        & 15.6  \\
+P18  & Enzyme        & 14.2  \\
+P19  & Essential Oil & 13.7  \\
+P20  & Essential Oil & 14.4  \\
+P21  & Essential Oil & 12.9  \\
+P22  & Essential Oil & 13.5  \\
+P23  & Essential Oil & 14.8  \\
+P24  & Essential Oil & 13.2  \\
+\bottomrule
+\end{tabular}
+
+\end{frame}
+
+% Slide: Hypothesis
+\begin{frame}
+\frametitle{Research Hypothesis for One-way ANOVA}
+\textbf{Null Hypothesis (H$_0$)}: There is no significant difference in mean weight gain among the four feed supplement groups.  
+\[
+H_0: \mu_A = \mu_B = \mu_C = \mu_D
+\]
+\textbf{Alternative Hypothesis (H$_1$)}: At least one feed supplement group shows a significant difference in mean weight gain.  
+\[
+H_1: \text{At least one } \mu_i \text{ differs from the others}
+\]
+\end{frame}
+
+% Step 2: Load and Transform Data
+\begin{frame}[fragile]
+    \frametitle{Step 2: Load the Data and check the structure}
+    \begin{minted}[fontsize=\tiny]{r}
+# Creating a data frame 
+data <- data.frame(
+  ID = c("P01", "P02", "P03", "P04", "P05", "P06", 
+         "P07", "P08", "P09", "P10", "P11", "P12",
+         "P13", "P14", "P15", "P16", "P17", "P18",
+         "P19", "P20", "P21", "P22", "P23", "P24"),
+  Group = c(rep("Standard",6),rep("Probiotic",6), rep("Enzyme",6),rep("Essential Oil",6)),
+  Weight = c(12.8, 13.5, 11.9, 12.3, 14.1, 13.0,
+            15.2, 16.4, 14.8, 15.9, 17.2, 16.1,
+            14.5, 15.3, 13.9, 14.8, 15.6, 14.2,
+            13.7, 14.4, 12.9, 13.5, 14.8, 13.2)
+)
+
+# Convert Group to factor 
+data$Group <- factor(data$Group, levels = c("Standard", "Probiotic", "Enzyme", "Essential Oil"))
+
+# Looking at the first few rows
+head(data)
+
+# Data Summary
+summary(data)
+
+# Data Structure
+str(data)
+
+    \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Step 3: Data Visualization - Boxplot}
+    
+    \textbf{Boxplot of Feed Supplement on Weight}
+    
+    \begin{minted}[fontsize=\tiny]{r}
+    # Boxplot
+    ggplot(dat, aes(x = Group, y = Weight, fill = Group)) +
+      geom_boxplot() +
+      theme_minimal() +
+      labs(title = "Boxplot of Feed Supplement on Weight", x = "Group", y = "Weight")
+    \end{minted}
+    
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.5\linewidth]{Rplot4.JPEG}
+        \caption{Boxplot of Feed Supplement on Weight}
+    \end{figure}
+
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Step 3: Data Visualization - Histogram}
+    
+    \textbf{Histogram of Maize Yield Distribution}
+    
+    \begin{minted}[fontsize=\tiny]{r}
+    # Histogram
+   ggplot(dat, aes(x = Weight)) +
+     geom_histogram(aes(y = ..density..), bins = 15, fill = "skyblue", color = "black", alpha = 0.7) +
+     geom_density(color = "red", size = 0.5) +
+     theme_minimal() +
+     labs(title = "Distribution of  Weight", x = "Response", y = "Density")
+    \end{minted}
+    
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.5\linewidth]{Rplot5.JPEG}
+        \caption{Histogram of Maize Yield Distribution}
+    \end{figure}
+
+\end{frame}
+
+% Step 5: Running One-Way ANOVA
+\begin{frame}[fragile]
+    \frametitle{Step 5: Running One-Way ANOVA}
+    
+    \textbf{ANOVA Model}
+
+    \begin{minted}[fontsize=\small]{r}
+    # Perform ANOVA
+    anova_mod2 <- aov(Weight ~ Group, data = dat)
+    summary(anova_mod2)
+    \end{minted}
+
+    \vspace{0.2cm} % Adds some space for readability
+
+    \textbf{ANOVA Output:}
+
+    \begin{scriptsize} % Adjust font size for better fit
+    \begin{verbatim}
+                 Df Sum Sq Mean Sq F value   Pr(>F)    
+    Group        3  30.04  10.014  17.31   8.83e-06 ***
+    Residuals   20  11.57   0.578                     
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+    \end{verbatim}
+    \end{scriptsize}
+
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Step 5: Assumption Checks for ANOVA}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{Residual Analysis}
+\begin{minted}[fontsize=\tiny]{r}
+# Plot residuals
+plot(anova_mod2)
+\end{minted}
+\vspace{0.3cm}
+\centering
+\includegraphics[width=0.9\linewidth]{Rplot7.jpeg} 
+\vspace{0.2cm}
+{\scriptsize \textit{Figure: Residual Diagnostic Plot}}
+        
+\column{0.5\textwidth}
+{\small \textbf{Shapiro-Wilk Normality Test}}
+\begin{minted}[fontsize=\tiny]{r}
+# Shapiro-Wilk test on residuals
+aov_residuals <- residuals(object = anova_mod2)
+shapiro.test(x = aov_residuals)
+\end{minted}
+\begin{scriptsize}
+\begin{verbatim}
+Shapiro-Wilk normality test
+data:  aov_residuals
+W = 0.96241, p-value = 0.4887
+\end{verbatim}
+\end{scriptsize}
+
+\vspace{0.1cm}
+
+{\small \textbf{Levene's Test for Homogeneity of Variance}}
+\begin{minted}[fontsize=\tiny]{r}
+# Homogeneity of variance
+leveneTest(aov_residuals ~ dat$Group)  # Levene’s test  
+\end{minted}
+\begin{scriptsize}
+\begin{verbatim}
+Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  3  0.0852 0.9673
+      20             
+\end{verbatim}
+\end{scriptsize}
+\end{columns}
+\end{frame}
+
+% Step 6: Post-hoc Analysis
+\begin{frame}[fragile]
+\frametitle{Step 6: Post-hoc Analysis}
+
+\textbf{Tukey's HSD Test}
+\begin{minted}[fontsize=\small]{r}
+   # Post-hoc tests (Tukey's HSD)
+   tukey_test <- TukeyHSD(anova_mod2)
+   print(tukey_test)
+\end{minted}
+
+\vspace{0.2cm}
+
+\textbf{Post-hoc Result}
+\begin{scriptsize}
+\begin{verbatim}
+  Tukey multiple comparisons of means
+  95% family-wise confidence level
+  
+  Fit: aov(formula = Weight ~ Group, data = dat)
+  
+  $Group
+                                diff        lwr         upr     p adj
+  Probiotic-Standard       3.0000000  1.7709090  4.22909102 0.0000068
+  Enzyme-Standard          1.7833333  0.5542423  3.01242435 0.0031467
+  Essential Oil-Standard   0.8166667 -0.4124244  2.04575769 0.2762897
+  Enzyme-Probiotic        -1.2166667 -2.4457577  0.01242435 0.0529681
+  Essential Oil-Probiotic -2.1833333 -3.4124244 -0.95424231 0.0003949
+  Essential Oil-Enzyme    -0.9666667 -2.1957577  0.26242435 0.1570260     
+\end{verbatim}
+\end{scriptsize}
+  
+\end{frame}
+
+
+
+\begin{frame}
+    \centering
+    \Huge \textbf{Questions?}
+\end{frame}
+
+
+
+\end{document}
